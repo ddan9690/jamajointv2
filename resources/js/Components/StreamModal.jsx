@@ -6,7 +6,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 
 export default function StreamModal({ open, onClose, school, form, stream }) {
     const editing = Boolean(stream);

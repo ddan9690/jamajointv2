@@ -5,10 +5,10 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+} from '@/Components/ui/select';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 
 const genderNames = { M: 'Male', F: 'Female' };
 

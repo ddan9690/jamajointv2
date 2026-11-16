@@ -3,8 +3,8 @@ import { Link, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Plus } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import SubjectPaperModal from '@/components/SubjectPaperModal';
-import { Button } from '@/components/ui/button';
+import SubjectPaperModal from '@/Components/SubjectPaperModal';
+import { Button } from '@/Components/ui/button';
 
 export default function Papers({ subject, papers, max }) {
     const base = `/subjects/${subject.id}/${subject.slug}/papers`;

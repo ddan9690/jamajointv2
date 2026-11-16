@@ -3,9 +3,9 @@ import { Link, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { Plus } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import SubjectModal from '@/components/SubjectModal';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import SubjectModal from '@/Components/SubjectModal';
+import { Button } from '@/Components/ui/button';
+import { Switch } from '@/Components/ui/switch';
 
 export default function Index({ subjects }) {
     // modal = { subject } while open (subject is null when adding), otherwise null

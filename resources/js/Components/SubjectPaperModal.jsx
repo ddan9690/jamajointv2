@@ -1,11 +1,11 @@
 import { useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 
 export default function SubjectPaperModal({ open, onClose, subject, paper }) {
     const editing = Boolean(paper);

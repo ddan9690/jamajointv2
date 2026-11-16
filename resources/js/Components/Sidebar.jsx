@@ -1,14 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    Award, BarChart3, BookOpen, ClipboardList, GraduationCap, LayoutDashboard, School, Settings,
+    BarChart3, BookOpen, ClipboardList, GraduationCap, LayoutDashboard, School, Settings,
 } from 'lucide-react';
 
 const links = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Exams', href: '/exams', icon: ClipboardList },
-    { label: 'Grading Systems', href: '/grading-systems', icon: Award },
     { label: 'Schools', href: '/schools', icon: School, roles: ['super_admin'] },
-    { label: 'Subjects', href: '#', icon: BookOpen },
+    { label: 'Subjects', href: '/subjects', icon: BookOpen, roles: ['super_admin'] },
     { label: 'Students', href: '#', icon: GraduationCap },
     { label: 'Results', href: '#', icon: BarChart3 },
     { label: 'Settings', href: '#', icon: Settings },
@@ -17,7 +16,9 @@ const links = [
 export default function Sidebar({ open }) {
     const { props, url } = usePage();
     const role = props.auth?.user?.role;
+
     const isActive = (href) => (href === '/' ? url === '/' : url.startsWith(href));
+
     const linkClass = (active) =>
         `flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
             active

@@ -10,6 +10,8 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SchoolStudentsImportController;
 use App\Http\Controllers\StreamController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SubjectPaperController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,7 +46,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     });
 
-    // Grading Systems (Index, Store, Show, Update, Destroy)
+    // Grading Systems
     Route::resource('grading-systems', GradingSystemController::class);
 
     // Exams
@@ -60,6 +62,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/{slug}/schools', [ExamSchoolController::class, 'index'])->name('schools.index');
         Route::post('/{id}/{slug}/schools', [ExamSchoolController::class, 'store'])->name('schools.store');
         Route::delete('/{id}/{slug}/schools/{school}', [ExamSchoolController::class, 'destroy'])->name('schools.destroy');
+    });
+
+    // Subjects and their papers (super admin)
+    Route::prefix('subjects')->name('subjects.')->group(function () {
+        Route::get('/', [SubjectController::class, 'index'])
+            ->middleware('can:viewAny,App\Models\Subject')->name('index');
+        Route::post('/', [SubjectController::class, 'store'])
+            ->middleware('can:create,App\Models\Subject')->name('store');
+
+        Route::put('/{subject}/{slug}', [SubjectController::class, 'update'])
+            ->middleware('can:update,subject')->name('update');
+        Route::patch('/{subject}/{slug}/toggle', [SubjectController::class, 'toggle'])
+            ->middleware('can:update,subject')->name('toggle');
+        Route::delete('/{subject}/{slug}', [SubjectController::class, 'destroy'])
+            ->middleware('can:delete,subject')->name('destroy');
+
+        // Papers of a subject
+        Route::middleware('can:manage,subject')->group(function () {
+            Route::get('/{subject}/{slug}/papers', [SubjectPaperController::class, 'index'])->name('papers.index');
+            Route::post('/{subject}/{slug}/papers', [SubjectPaperController::class, 'store'])->name('papers.store');
+            Route::put('/{subject}/{slug}/papers/{paper}', [SubjectPaperController::class, 'update'])->name('papers.update');
+            Route::delete('/{subject}/{slug}/papers/{paper}', [SubjectPaperController::class, 'destroy'])->name('papers.destroy');
+        });
     });
 
     // Schools

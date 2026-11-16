@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Models\Exam;
 use App\Models\School;
+use App\Models\Subject;
 use App\Models\User;
 use App\Policies\ExamPolicy;
 use App\Policies\SchoolPolicy;
+use App\Policies\SubjectPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +28,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         Gate::policy(School::class, SchoolPolicy::class);
         Gate::policy(Exam::class, ExamPolicy::class);
+        Gate::policy(Subject::class, SubjectPolicy::class);
     }
 
     /** Standalone gates that don't belong to a model. Added gradually. */

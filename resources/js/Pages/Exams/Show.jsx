@@ -1,16 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import { ArrowLeft, Eye, EyeOff, FileCheck, FilePen, Lock, Pencil, Plus, Search, X } from 'lucide-react';
+import { ArrowLeft, Check, Eye, EyeOff, FileCheck, FilePen, Lock, Pencil, Plus, Search, X } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
-export default function Show({ exam, schools, registeredCount, filters, canManage }) {
+function mapInitialPapers(examPapers) {
+    return examPapers.map((p) => ({
+        subject_paper_id: p.subject_paper_id,
+        name: p.name,
+        code: p.code,
+        out_of: p.out_of ?? '',
+        percentage_contribution: p.percentage_contribution ?? '',
+    }));
+}
+
+export default function Show({ exam, examPapers, schools, registeredCount, filters, canManage }) {
     const base = `/exams/${exam.id}/${exam.slug}`;
 
     const [search, setSearch] = useState(filters.search ?? '');
     const first = useRef(true);
+
+    const [editingPapers, setEditingPapers] = useState(false);
+    const papersForm = useForm({
+        papers: mapInitialPapers(examPapers),
+    });
+
+    useEffect(() => {
+        if (!editingPapers) {
+            papersForm.setData('papers', mapInitialPapers(examPapers));
+        }
+    }, [examPapers]);
 
     // Live search: runs 300ms after the user stops typing
     useEffect(() => {
@@ -64,6 +85,48 @@ export default function Show({ exam, schools, registeredCount, filters, canManag
                 Swal.fire({ icon: 'success', title: 'School unregistered', timer: 1500, showConfirmButton: false }),
         });
     }
+
+    function updatePaperField(index, field, value) {
+        const updated = papersForm.data.papers.map((row, idx) =>
+            idx === index ? { ...row, [field]: value } : row
+        );
+        papersForm.setData('papers', updated);
+    }
+
+    function cancelEditingPapers() {
+        papersForm.setData('papers', mapInitialPapers(examPapers));
+        papersForm.clearErrors();
+        setEditingPapers(false);
+    }
+
+    function savePapers(e) {
+        e.preventDefault();
+
+        papersForm.put(`${base}/papers`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingPapers(false);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Exam papers saved',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            },
+        });
+    }
+
+    const totalPercentage = papersForm.data.papers.reduce((sum, row) => {
+        const val = parseFloat(row.percentage_contribution);
+        return sum + (Number.isFinite(val) ? val : 0);
+    }, 0);
+
+    const roundedTotal = Math.round(totalPercentage * 100) / 100;
+    const isTotalExact = Math.round(totalPercentage * 100) === 10000;
+    const allFieldsFilled = papersForm.data.papers.every(
+        (row) => Number(row.out_of) >= 1 && Number(row.percentage_contribution) > 0
+    );
+    const hasConfiguredPapers = examPapers.some((p) => p.is_configured);
 
     const published = exam.status === 'published';
     const isPublic = exam.results_visibility === 'public';
@@ -162,6 +225,160 @@ export default function Show({ exam, schools, registeredCount, filters, canManag
                         )}
                     </div>
                 </div>
+
+                {/* Subject papers */}
+                <form onSubmit={savePapers} className="mb-6 rounded-lg border bg-card">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <h2 className="font-semibold">Subject papers ({examPapers.length})</h2>
+                            {examPapers.length > 0 && (
+                                <span className={badge(hasConfiguredPapers && isTotalExact)}>
+                                    {hasConfiguredPapers && isTotalExact ? 'Configured' : 'Not configured'}
+                                </span>
+                            )}
+                        </div>
+
+                        {canManage && examPapers.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                {!editingPapers ? (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setEditingPapers(true)}
+                                    >
+                                        <Pencil className="size-4" /> Change
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={cancelEditingPapers}
+                                            disabled={papersForm.processing}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            size="sm"
+                                            disabled={papersForm.processing || !isTotalExact || !allFieldsFilled}
+                                        >
+                                            <Check className="size-4" />
+                                            {papersForm.processing ? 'Saving...' : 'Save changes'}
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {examPapers.length === 0 ? (
+                        <div className="px-4 py-6 text-sm text-muted-foreground">
+                            No papers have been added under <b>{exam.subject}</b> yet. Add subject papers first before configuring this exam.
+                        </div>
+                    ) : (
+                        <>
+                            {papersForm.errors.papers && (
+                                <div className="border-b bg-destructive/10 px-4 py-2.5 text-xs font-medium text-destructive">
+                                    {papersForm.errors.papers}
+                                </div>
+                            )}
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs sm:text-sm">
+                                    <thead>
+                                        <tr className="border-b text-left text-muted-foreground">
+                                            <th className="w-10 px-4 py-2 font-medium">#</th>
+                                            <th className="px-4 py-2 font-medium">Paper</th>
+                                            <th className="w-36 px-4 py-2 font-medium">Marks out of</th>
+                                            <th className="w-44 px-4 py-2 font-medium">Contribution (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {papersForm.data.papers.map((paper, index) => {
+                                            const outOfError = papersForm.errors[`papers.${index}.out_of`];
+                                            const pctError = papersForm.errors[`papers.${index}.percentage_contribution`];
+
+                                            return (
+                                                <tr key={paper.subject_paper_id} className="border-b last:border-0">
+                                                    <td className="px-4 py-2.5">{index + 1}</td>
+                                                    <td className="px-4 py-2.5">
+                                                        <div className="font-medium text-foreground">{paper.name}</div>
+                                                        {paper.code && (
+                                                            <div className="text-xs text-muted-foreground">{paper.code}</div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <Input
+                                                            type="number"
+                                                            min="1"
+                                                            max="1000"
+                                                            step="1"
+                                                            placeholder="e.g. 100"
+                                                            value={paper.out_of}
+                                                            disabled={!editingPapers || papersForm.processing}
+                                                            onChange={(e) => updatePaperField(index, 'out_of', e.target.value)}
+                                                            className="h-8 w-28"
+                                                        />
+                                                        {outOfError && (
+                                                            <p className="mt-1 text-xs text-destructive">{outOfError}</p>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Input
+                                                                type="number"
+                                                                min="0.01"
+                                                                max="100"
+                                                                step="0.01"
+                                                                placeholder="e.g. 50"
+                                                                value={paper.percentage_contribution}
+                                                                disabled={!editingPapers || papersForm.processing}
+                                                                onChange={(e) =>
+                                                                    updatePaperField(index, 'percentage_contribution', e.target.value)
+                                                                }
+                                                                className="h-8 w-28"
+                                                            />
+                                                            <span className="text-muted-foreground">%</span>
+                                                        </div>
+                                                        {pctError && (
+                                                            <p className="mt-1 text-xs text-destructive">{pctError}</p>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr className="border-t bg-muted/30 font-medium">
+                                            <td colSpan="3" className="px-4 py-2.5 text-right text-muted-foreground">
+                                                Total contribution
+                                            </td>
+                                            <td className="px-4 py-2.5">
+                                                <span
+                                                    className={
+                                                        isTotalExact
+                                                            ? 'text-green-600 dark:text-green-400'
+                                                            : 'text-destructive'
+                                                    }
+                                                >
+                                                    {roundedTotal}%
+                                                </span>
+                                                {!isTotalExact && (
+                                                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                                        (must be 100%)
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </form>
 
                 {/* Participating schools */}
                 <div className="rounded-lg border bg-card">

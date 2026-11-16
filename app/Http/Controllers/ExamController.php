@@ -58,10 +58,28 @@ class ExamController extends Controller
         $exam = $this->find($id, $slug)->load([
             'academicYear:id,name',
             'form:id,name',
-            'subject:id,name',
+            'subject:id,name,code',
+            'subject.papers' => fn($q) => $q->orderBy('position')->select('id', 'subject_id', 'name', 'code', 'position'),
+            'papers:id,exam_id,subject_paper_id,out_of,percentage_contribution',
         ]);
 
         Gate::authorize('view', $exam);
+
+        $configured = $exam->papers->keyBy('subject_paper_id');
+
+        $examPapers = $exam->subject->papers->map(function ($subjectPaper) use ($configured) {
+            $saved = $configured->get($subjectPaper->id);
+
+            return [
+                'subject_paper_id' => $subjectPaper->id,
+                'name' => $subjectPaper->name,
+                'code' => $subjectPaper->code,
+                'position' => $subjectPaper->position,
+                'out_of' => $saved ? $saved->out_of : '',
+                'percentage_contribution' => $saved ? (float) $saved->percentage_contribution : '',
+                'is_configured' => (bool) $saved,
+            ];
+        })->values();
 
         $search = trim((string) $request->input('search', ''));
 
@@ -92,6 +110,7 @@ class ExamController extends Controller
                 'results_visibility' => $exam->results_visibility,
                 'mark_submission_mode' => $exam->mark_submission_mode,
             ],
+            'examPapers' => $examPapers,
             'schools' => $schools,
             'registeredCount' => $exam->schools()->count(),
             'filters' => ['search' => $search],

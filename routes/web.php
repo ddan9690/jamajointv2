@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamPaperController;
 use App\Http\Controllers\ExamSchoolController;
 use App\Http\Controllers\GradingSystemController;
 use App\Http\Controllers\ProfileController;
@@ -58,6 +59,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{id}/{slug}/settings', [ExamController::class, 'updateSettings'])->name('settings');
         Route::delete('/{id}/{slug}', [ExamController::class, 'destroy'])->name('destroy');
 
+        Route::put('/{id}/{slug}/papers', [ExamPaperController::class, 'update'])->name('papers.update');
         // Schools taking part in an exam
         Route::get('/{id}/{slug}/schools', [ExamSchoolController::class, 'index'])->name('schools.index');
         Route::post('/{id}/{slug}/schools', [ExamSchoolController::class, 'store'])->name('schools.store');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Exam extends Model
@@ -34,6 +35,11 @@ class Exam extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function papers(): HasMany
+    {
+        return $this->hasMany(ExamPaper::class);
     }
 
     public function gradingSystem()
@@ -122,7 +128,7 @@ class Exam extends Model
 
         return $query->whereHas(
             'schools',
-            fn (Builder $q) => $q->where('schools.id', $user->school_id)
+            fn(Builder $q) => $q->where('schools.id', $user->school_id)
         );
     }
 }

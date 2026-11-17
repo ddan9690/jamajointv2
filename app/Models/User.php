@@ -9,7 +9,7 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'county_id', 'school_id', 'phone', 'email', 'password'];
+    protected $fillable = ['name', 'county_id', 'school_id', 'phone', 'email', 'password', 'role', 'status'];
 
     protected $hidden = ['password', 'remember_token', 'email_otp', 'phone_otp'];
 
@@ -34,6 +34,13 @@ class User extends Authenticatable
         return $this->belongsTo(School::class);
     }
 
+    public function adminExams()
+    {
+        return $this->belongsToMany(Exam::class, 'exam_admins', 'user_id', 'exam_id')
+            ->using(ExamAdmin::class)
+            ->withPivot('added_by')
+            ->withTimestamps();
+    }
 
     public function isSuperAdmin(): bool
     {

@@ -15,10 +15,16 @@ class ExamPolicy
         return $exam->hasSchoolId($user->school_id);
     }
 
-    /** Settings and school registration: assigned exam admin whose school takes part. */
+    /** Settings, papers and school registration. */
     public function manage(User $user, Exam $exam): bool
     {
         return $exam->isManagedBy($user);
+    }
+
+    /** Add and remove exam admins (super admin only). */
+    public function manageAdmins(User $user, Exam $exam): bool
+    {
+        return false;
     }
 
     public function create(User $user): bool

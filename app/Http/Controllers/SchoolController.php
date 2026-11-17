@@ -18,6 +18,7 @@ class SchoolController extends Controller
         Gate::authorize('viewAny', School::class);
 
         $schools = School::with('county:id,name')
+            ->withCount('students')
             ->when($request->search, fn($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->orderBy('name')
             ->paginate(15)
@@ -68,6 +69,12 @@ class SchoolController extends Controller
                 ->orderBy('name')])
             ->get();
 
+        $teachers = $school->users()
+            ->whereIn('role', ['teacher', 'exam_admin'])
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'phone']);
+
         return Inertia::render('Schools/Show', [
             'school' => [
                 'id' => $school->id,
@@ -85,6 +92,11 @@ class SchoolController extends Controller
                     'name' => $s->name,
                     'students_count' => $s->students_count,
                 ]),
+            ]),
+            'teachers' => $teachers->map(fn($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'phone' => $t->phone,
             ]),
             'canEditSchool' => $request->user()->can('update', $school),
         ]);

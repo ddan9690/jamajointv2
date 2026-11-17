@@ -21,7 +21,7 @@ class StudentController extends Controller
                 Rule::unique('students', 'admission_number')->where('school_id', $school->id),
             ],
             'name' => ['required', 'string', 'max:255'],
-           'gender' => ['required', Rule::in(Student::GENDERS)],
+            'gender' => ['required', Rule::in(Student::GENDERS)],
         ]);
 
         Student::create($data + [
@@ -31,6 +31,35 @@ class StudentController extends Controller
         ]);
 
         return back();
+    }
+
+    /** Finds students of this school by name or admission number. */
+    public function search(Request $request, School $school, string $slug)
+    {
+        abort_unless($school->slug === $slug, 404);
+
+        $term = trim((string) $request->input('q', ''));
+
+        if ($term === '') {
+            return response()->json([]);
+        }
+
+        return Student::where('school_id', $school->id)
+            ->where(fn ($q) => $q
+                ->where('name', 'like', "%{$term}%")
+                ->orWhere('admission_number', 'like', "%{$term}%"))
+            ->with(['form:id,name', 'stream:id,name'])
+            ->orderByRaw('LENGTH(admission_number), admission_number')
+            ->limit(20)
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'gender' => $s->gender,
+                'admission_number' => $s->admission_number,
+                'form' => $s->form?->name,
+                'stream' => $s->stream?->name,
+            ]);
     }
 
     public function edit(School $school, string $slug, Stream $stream, string $streamSlug, Student $student)
@@ -60,7 +89,7 @@ class StudentController extends Controller
                     ->ignore($student->id),
             ],
             'name' => ['required', 'string', 'max:255'],
-            'gender' => ['nullable', Rule::in(['M', 'F'])],
+            'gender' => ['nullable', Rule::in(Student::GENDERS)],
             'stream_id' => [
                 'required',
                 Rule::exists('streams', 'id')
@@ -74,7 +103,18 @@ class StudentController extends Controller
         return redirect()->route('schools.streams.show', [$school->id, $school->slug, $stream->id, $stream->slug]);
     }
 
-    /** Deletes the selected students of this stream, and their marks. */
+    /** Deletes one student of this school (used by the student search on the school page). */
+    public function destroy(School $school, string $slug, Student $student)
+    {
+        abort_unless($school->slug === $slug, 404);
+        abort_unless($student->school_id === $school->id, 404);
+
+        $student->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    /** Deletes the selected students of this stream. */
     public function destroyMany(Request $request, School $school, string $slug, Stream $stream, string $streamSlug)
     {
         $this->checkStream($school, $slug, $stream, $streamSlug);

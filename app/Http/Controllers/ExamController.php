@@ -115,6 +115,7 @@ class ExamController extends Controller
             'registeredCount' => $exam->schools()->count(),
             'filters' => ['search' => $search],
             'canManage' => $request->user()->can('manage', $exam),
+            'canManageAdmins' => $request->user()->can('manageAdmins', $exam),
         ]);
     }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, router, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import { ArrowLeft, Check, Eye, EyeOff, FileCheck, FilePen, Lock, Pencil, Plus, Search, X } from 'lucide-react';
+import { ArrowLeft, Check, Eye, EyeOff, FileCheck, FilePen, Lock, Pencil, Plus, Search, Users, X } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -16,7 +16,7 @@ function mapInitialPapers(examPapers) {
     }));
 }
 
-export default function Show({ exam, examPapers, schools, registeredCount, filters, canManage }) {
+export default function Show({ exam, examPapers, schools, registeredCount, filters, canManage, canManageAdmins }) {
     const base = `/exams/${exam.id}/${exam.slug}`;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -149,11 +149,20 @@ export default function Show({ exam, examPapers, schools, registeredCount, filte
                             {exam.subject} · {exam.form} · {exam.year}
                         </p>
                     </div>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href="/exams">
-                            <ArrowLeft className="size-4" /> Back
-                        </Link>
-                    </Button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        {canManageAdmins && (
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={`${base}/admins`}>
+                                    <Users className="size-4" /> Manage exam admins
+                                </Link>
+                            </Button>
+                        )}
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/exams">
+                                <ArrowLeft className="size-4" /> Back
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Settings */}
@@ -241,12 +250,7 @@ export default function Show({ exam, examPapers, schools, registeredCount, filte
                         {canManage && examPapers.length > 0 && (
                             <div className="flex items-center gap-2">
                                 {!editingPapers ? (
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setEditingPapers(true)}
-                                    >
+                                    <Button type="button" size="sm" variant="outline" onClick={() => setEditingPapers(true)}>
                                         <Pencil className="size-4" /> Change
                                     </Button>
                                 ) : (
@@ -276,7 +280,8 @@ export default function Show({ exam, examPapers, schools, registeredCount, filte
 
                     {examPapers.length === 0 ? (
                         <div className="px-4 py-6 text-sm text-muted-foreground">
-                            No papers have been added under <b>{exam.subject}</b> yet. Add subject papers first before configuring this exam.
+                            No papers have been added under <b>{exam.subject}</b> yet. Add subject papers first before
+                            configuring this exam.
                         </div>
                     ) : (
                         <>
@@ -462,7 +467,10 @@ export default function Show({ exam, examPapers, schools, registeredCount, filte
                                     ))}
                                     {schools.data.length === 0 && (
                                         <tr>
-                                            <td colSpan={canManage ? 5 : 4} className="px-4 py-8 text-center text-muted-foreground">
+                                            <td
+                                                colSpan={canManage ? 5 : 4}
+                                                className="px-4 py-8 text-center text-muted-foreground"
+                                            >
                                                 No school found.
                                             </td>
                                         </tr>

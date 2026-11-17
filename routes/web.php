@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ExamAdminController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamPaperController;
 use App\Http\Controllers\ExamSchoolController;
@@ -59,11 +60,19 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{id}/{slug}/settings', [ExamController::class, 'updateSettings'])->name('settings');
         Route::delete('/{id}/{slug}', [ExamController::class, 'destroy'])->name('destroy');
 
+        // Papers of an exam
         Route::put('/{id}/{slug}/papers', [ExamPaperController::class, 'update'])->name('papers.update');
+
         // Schools taking part in an exam
         Route::get('/{id}/{slug}/schools', [ExamSchoolController::class, 'index'])->name('schools.index');
         Route::post('/{id}/{slug}/schools', [ExamSchoolController::class, 'store'])->name('schools.store');
         Route::delete('/{id}/{slug}/schools/{school}', [ExamSchoolController::class, 'destroy'])->name('schools.destroy');
+
+        // Exam admins (super admin). "search" is declared before {user} routes.
+        Route::get('/{id}/{slug}/admins', [ExamAdminController::class, 'index'])->name('admins.index');
+        Route::get('/{id}/{slug}/admins/search', [ExamAdminController::class, 'search'])->name('admins.search');
+        Route::post('/{id}/{slug}/admins', [ExamAdminController::class, 'store'])->name('admins.store');
+        Route::delete('/{id}/{slug}/admins/{user}', [ExamAdminController::class, 'destroy'])->name('admins.destroy');
     });
 
     // Subjects and their papers (super admin)
@@ -80,7 +89,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{subject}/{slug}', [SubjectController::class, 'destroy'])
             ->middleware('can:delete,subject')->name('destroy');
 
-        // Papers of a subject
         Route::middleware('can:manage,subject')->group(function () {
             Route::get('/{subject}/{slug}/papers', [SubjectPaperController::class, 'index'])->name('papers.index');
             Route::post('/{subject}/{slug}/papers', [SubjectPaperController::class, 'store'])->name('papers.store');
@@ -107,21 +115,21 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{school}/{slug}', [SchoolController::class, 'destroy'])
             ->middleware('can:delete,school')->name('destroy');
 
-        // Streams and students of a school
+        // Streams, students and imports of a school
         Route::middleware('can:manage,school')->group(function () {
-            // Streams
             Route::post('/{school}/{slug}/streams', [StreamController::class, 'store'])->name('streams.store');
             Route::put('/{school}/{slug}/streams/{stream}', [StreamController::class, 'update'])->name('streams.update');
             Route::delete('/{school}/{slug}/streams/{stream}', [StreamController::class, 'destroy'])->name('streams.destroy');
             Route::get('/{school}/{slug}/streams/{stream}/{streamSlug}', [StreamController::class, 'show'])->name('streams.show');
 
-            // Students of a stream
             Route::post('/{school}/{slug}/streams/{stream}/{streamSlug}/students', [StudentController::class, 'store'])->name('students.store');
             Route::delete('/{school}/{slug}/streams/{stream}/{streamSlug}/students', [StudentController::class, 'destroyMany'])->name('students.destroyMany');
             Route::get('/{school}/{slug}/streams/{stream}/{streamSlug}/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
             Route::put('/{school}/{slug}/streams/{stream}/{streamSlug}/students/{student}', [StudentController::class, 'update'])->name('students.update');
 
-            // Bulk import of students into a form
+            Route::get('/{school}/{slug}/student-search', [StudentController::class, 'search'])->name('students.search');
+            Route::delete('/{school}/{slug}/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+
             Route::prefix('/{school}/{slug}')->group(function () {
                 Route::get('/forms/{form}/import', [SchoolStudentsImportController::class, 'create'])->name('students.import.create');
                 Route::post('/forms/{form}/import', [SchoolStudentsImportController::class, 'store'])->name('students.import.store');

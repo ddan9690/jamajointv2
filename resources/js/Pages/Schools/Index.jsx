@@ -90,6 +90,7 @@ export default function Index({ schools, filters }) {
                                 <th className="w-12 px-4 py-2 font-medium">#</th>
                                 <th className="px-4 py-2 font-medium">Name</th>
                                 <th className="px-4 py-2 font-medium">County</th>
+                                <th className="px-4 py-2 font-medium">Students</th>
                                 <th className="px-4 py-2 font-medium">Type</th>
                                 <th className="px-4 py-2 text-right font-medium">Actions</th>
                             </tr>
@@ -98,19 +99,21 @@ export default function Index({ schools, filters }) {
                             {schools.data.map((school, index) => (
                                 <tr key={school.id} className="border-b last:border-0">
                                     <td className="px-4 py-2">{schools.from + index}</td>
-                                    <td className="whitespace-nowrap px-4 py-2">{school.name}</td>
+                                    <td className="whitespace-nowrap px-4 py-2">
+                                        <Link
+                                            href={`/schools/${school.id}/${school.slug}`}
+                                            className="font-medium text-primary hover:underline"
+                                        >
+                                            {school.name}
+                                        </Link>
+                                    </td>
                                     <td className="whitespace-nowrap px-4 py-2">{school.county?.name}</td>
+                                    <td className="whitespace-nowrap px-4 py-2">{school.students_count}</td>
                                     <td className="whitespace-nowrap px-4 py-2 capitalize">{school.type}</td>
                                     <td className="whitespace-nowrap px-4 py-2 text-right">
                                         <Link
-                                            href={`/schools/${school.id}/${school.slug}`}
-                                            className="text-primary hover:underline"
-                                        >
-                                            View
-                                        </Link>
-                                        <Link
                                             href={`/schools/${school.id}/${school.slug}/edit`}
-                                            className="ml-3 text-primary hover:underline"
+                                            className="text-primary hover:underline"
                                         >
                                             Edit
                                         </Link>
@@ -125,7 +128,7 @@ export default function Index({ schools, filters }) {
                             ))}
                             {schools.data.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="px-4 py-8 text-center text-muted-foreground">
+                                    <td colSpan="6" className="px-4 py-8 text-center text-muted-foreground">
                                         No school found.
                                     </td>
                                 </tr>

@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import Swal from 'sweetalert2';
-import { Check, X, Shield, User, Mail, Phone, Lock } from 'lucide-react';
+import { Check, X, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
-export default function Edit({ user, status }) {
+export default function Edit({ user }) {
     // Profile info form
     const { data: profileData, setData: setProfileData, patch, processing: profileProcessing, errors: profileErrors } = useForm({
         email: user.email,
@@ -20,6 +20,11 @@ export default function Edit({ user, status }) {
         password: '',
         password_confirmation: '',
     });
+
+    // Password visibility states
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Live password criteria validation state
     const [passwordChecks, setPasswordChecks] = useState({
@@ -46,6 +51,7 @@ export default function Edit({ user, status }) {
     function submitProfile(e) {
         e.preventDefault();
         patch('/profile', {
+            preserveScroll: true,
             onSuccess: () => {
                 Swal.fire({
                     icon: 'success',
@@ -61,8 +67,12 @@ export default function Edit({ user, status }) {
     function submitPassword(e) {
         e.preventDefault();
         put('/profile/password', {
+            preserveScroll: true,
             onSuccess: () => {
                 reset();
+                setShowCurrentPassword(false);
+                setShowNewPassword(false);
+                setShowConfirmPassword(false);
                 setPasswordChecks({ length: false, uppercase: false, lowercase: false, number: false, symbol: false });
                 Swal.fire({
                     icon: 'success',
@@ -82,13 +92,13 @@ export default function Edit({ user, status }) {
             <div className="mx-auto max-w-3xl space-y-6">
                 <div>
                     <h1 className="text-xl font-semibold">Account Profile</h1>
-                    <p className="text-sm text-muted-foreground">Update your account email, phone number, and security credentials.</p>
+                    <p className="text-sm text-muted-foreground">{user.name} · {user.school}</p>
                 </div>
 
                 {/* Section 1: Read-only Identity Information */}
                 <div className="rounded-lg border bg-card p-6 shadow-sm">
                     <h2 className="text-base font-medium mb-4 flex items-center gap-2">
-                        <User className="size-4 text-primary" /> Personal Information (Locked)
+                        <User className="size-4 text-primary" /> Personal Information
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
@@ -152,13 +162,22 @@ export default function Edit({ user, status }) {
                     <form onSubmit={submitPassword} className="space-y-4">
                         <div>
                             <Label htmlFor="current_password">Current Password</Label>
-                            <Input
-                                id="current_password"
-                                type="password"
-                                value={passwordData.current_password}
-                                onChange={(e) => setPasswordData('current_password', e.target.value)}
-                                className="mt-1"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="current_password"
+                                    type={showCurrentPassword ? 'text' : 'password'}
+                                    value={passwordData.current_password}
+                                    onChange={(e) => setPasswordData('current_password', e.target.value)}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {passwordErrors.current_password && (
                                 <p className="text-sm text-destructive mt-1">{passwordErrors.current_password}</p>
                             )}
@@ -166,13 +185,22 @@ export default function Edit({ user, status }) {
 
                         <div>
                             <Label htmlFor="password">New Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={passwordData.password}
-                                onChange={handlePasswordChange}
-                                className="mt-1"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="password"
+                                    type={showNewPassword ? 'text' : 'password'}
+                                    value={passwordData.password}
+                                    onChange={handlePasswordChange}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {passwordErrors.password && <p className="text-sm text-destructive mt-1">{passwordErrors.password}</p>}
 
                             {/* Live Password Strength Checklist */}
@@ -202,13 +230,22 @@ export default function Edit({ user, status }) {
 
                         <div>
                             <Label htmlFor="password_confirmation">Confirm New Password</Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                value={passwordData.password_confirmation}
-                                onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
-                                className="mt-1"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="password_confirmation"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={passwordData.password_confirmation}
+                                    onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {passwordData.password_confirmation && (
                                 <p className={`text-xs mt-1 font-medium ${passwordData.password === passwordData.password_confirmation ? 'text-green-600' : 'text-destructive'}`}>
                                     {passwordData.password === passwordData.password_confirmation ? '✓ Passwords match' : '✗ Passwords do not match'}

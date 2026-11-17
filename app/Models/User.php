@@ -9,7 +9,19 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'county_id', 'school_id', 'phone', 'email', 'password', 'role', 'status'];
+    protected $fillable = [
+        'name',
+        'county_id',
+        'school_id',
+        'phone',
+        'email',
+        'password',
+        'role',
+        'status',
+        'last_login_at',
+        'last_login_ip',
+        'last_active_at',
+    ];
 
     protected $hidden = ['password', 'remember_token', 'email_otp', 'phone_otp'];
 
@@ -20,6 +32,7 @@ class User extends Authenticatable
             'email_otp_expires_at' => 'datetime',
             'phone_otp_expires_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'last_active_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

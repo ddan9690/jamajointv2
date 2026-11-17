@@ -39,9 +39,11 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Update login tracking metadata
         $request->user()->update([
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
+            'last_active_at' => now(),
         ]);
 
         return redirect()->intended('/');

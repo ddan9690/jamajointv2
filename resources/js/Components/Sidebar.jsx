@@ -1,11 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BarChart3, BookOpen, ClipboardList, GraduationCap, LayoutDashboard, School, Settings,
+    BarChart3, BookOpen, ClipboardList, GraduationCap, LayoutDashboard, School, Settings, Users,
 } from 'lucide-react';
 
 const links = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Exams', href: '/exams', icon: ClipboardList },
+    { label: 'Users', href: '/users', icon: Users, roles: ['super_admin'] },
     { label: 'Schools', href: '/schools', icon: School, roles: ['super_admin'] },
     { label: 'Subjects', href: '/subjects', icon: BookOpen, roles: ['super_admin'] },
     { label: 'Students', href: '#', icon: GraduationCap },

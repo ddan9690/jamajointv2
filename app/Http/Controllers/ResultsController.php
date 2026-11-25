@@ -3,26 +3,45 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
+use App\Services\ExamResultSnapshotService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ResultsController extends Controller
 {
-    public function show(Request $request, $id, $slug)
+    public function __construct(
+        protected ExamResultSnapshotService $snapshotService,
+    ) {
+    }
+
+    public function index(Request $request, $id, $slug)
     {
         $exam = $this->findExam($id, $slug);
         $user = $request->user();
 
         abort_unless($user->isSuperAdmin() || $exam->hasSchoolId($user->school_id), 403);
 
-        if (! ($user->isSuperAdmin() || $user->isExamAdmin())
-            && ($exam->status !== 'published' || $exam->results_visibility === 'admins_only')) {
+        if ($user->isTeacher() && ($exam->status !== 'published' || $exam->results_visibility === 'admins_only')) {
             return redirect()->route('exams.processing', [$exam->id, $exam->slug]);
         }
 
-        return Inertia::render('Results/Index', [
-            'exam' => $this->examData($exam),
+        if ($exam->status !== 'published') {
+            return redirect()->route('exams.processing', [$exam->id, $exam->slug]);
+        }
+
+        $snapshot = $this->snapshotService->getActiveSnapshot($exam);
+        $results = $this->snapshotService->toResultsPayload($snapshot);
+
+        return view('exams.results.index', [
+            'exam' => $exam,
+            'results' => $results,
+            'snapshot' => $snapshot,
         ]);
+    }
+
+    public function show(Request $request, $id, $slug)
+    {
+        return $this->index($request, $id, $slug);
     }
 
     public function processing(Request $request, $id, $slug)

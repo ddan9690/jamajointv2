@@ -40,9 +40,9 @@ function ExamCard({ exam }) {
                         asChild
                         className="h-auto bg-green-600 px-4 py-2 text-white whitespace-nowrap shrink-0 hover:bg-green-700 dark:bg-green-600 dark:text-white dark:hover:bg-green-500"
                     >
-                        <Link href={`${base}/results`}>
+                        <a href={`${base}/results`}>
                             <BarChart3 className="size-4" /> View Results
-                        </Link>
+                        </a>
                     </Button>
                 ) : (
                     <Button asChild className="h-auto px-4 py-2 whitespace-nowrap shrink-0">

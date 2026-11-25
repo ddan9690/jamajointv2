@@ -97,7 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/{slug}/marks/schools/{school}/{schoolSlug}/streams/{stream}/{streamSlug}/papers/{paper}', [MarkEntryController::class, 'store'])->name('marks.store');
 
         // Results & processing
-        Route::get('/{id}/{slug}/results', [ResultsController::class, 'show'])->name('results.show');
+        Route::get('/{id}/{slug}/results', [ResultsController::class, 'index'])->name('results.show');
         Route::get('/{id}/{slug}/processing', [ResultsController::class, 'processing'])->name('processing');
     });
 

@@ -32,10 +32,9 @@ class ResultsController extends Controller
         $snapshot = $this->snapshotService->getActiveSnapshot($exam);
         $results = $this->snapshotService->toResultsPayload($snapshot);
 
-        return view('exams.results.index', [
-            'exam' => $exam,
+        return Inertia::render('Results/Index', [
+            'exam' => $this->examData($exam),
             'results' => $results,
-            'snapshot' => $snapshot,
         ]);
     }
 
@@ -73,7 +72,6 @@ class ResultsController extends Controller
             'subject' => $exam->subject?->name,
             'form' => $exam->form?->name,
             'year' => $exam->academicYear?->name,
-            'grading_system' => $exam->gradingSystem?->name,
             'status' => $exam->status,
             'results_visibility' => $exam->results_visibility,
         ];

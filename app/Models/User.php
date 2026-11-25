@@ -64,4 +64,9 @@ class User extends Authenticatable
     {
         return $this->role === 'exam_admin';
     }
+
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher';
+    }
 }

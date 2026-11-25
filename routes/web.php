@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamAdminController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamPaperController;
 use App\Http\Controllers\ExamSchoolController;
 use App\Http\Controllers\GradingSystemController;
+use App\Http\Controllers\MarkEntryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResultsController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SchoolStudentsImportController;
 use App\Http\Controllers\StreamController;
@@ -39,7 +42,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
 
     // Dashboard
-    Route::inertia('/', 'Dashboard')->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/online-list', [DashboardController::class, 'onlineList'])->name('dashboard.online-list');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // Profile
@@ -84,6 +88,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/{slug}/admins/search', [ExamAdminController::class, 'search'])->name('admins.search');
         Route::post('/{id}/{slug}/admins', [ExamAdminController::class, 'store'])->name('admins.store');
         Route::delete('/{id}/{slug}/admins/{user}', [ExamAdminController::class, 'destroy'])->name('admins.destroy');
+
+        // Mark entry: schools -> streams -> papers -> marks table
+        Route::get('/{id}/{slug}/marks', [MarkEntryController::class, 'index'])->name('marks.index');
+        Route::get('/{id}/{slug}/marks/schools/{school}/{schoolSlug}', [MarkEntryController::class, 'school'])->name('marks.school');
+        Route::get('/{id}/{slug}/marks/schools/{school}/{schoolSlug}/streams/{stream}/{streamSlug}', [MarkEntryController::class, 'stream'])->name('marks.stream');
+        Route::get('/{id}/{slug}/marks/schools/{school}/{schoolSlug}/streams/{stream}/{streamSlug}/papers/{paper}', [MarkEntryController::class, 'entry'])->name('marks.entry');
+        Route::post('/{id}/{slug}/marks/schools/{school}/{schoolSlug}/streams/{stream}/{streamSlug}/papers/{paper}', [MarkEntryController::class, 'store'])->name('marks.store');
+
+        // Results & processing
+        Route::get('/{id}/{slug}/results', [ResultsController::class, 'show'])->name('results.show');
+        Route::get('/{id}/{slug}/processing', [ResultsController::class, 'processing'])->name('processing');
     });
 
     // Subjects and their papers (super admin)

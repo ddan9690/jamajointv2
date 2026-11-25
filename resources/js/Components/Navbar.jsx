@@ -5,15 +5,16 @@ import { LogOut, Menu, User } from 'lucide-react';
 import ThemeToggle from '@/Components/ThemeToggle';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
+import OnlineUsersModal from '@/Components/OnlineUsersModal';
 
 export default function Navbar({ onOpenMobileMenu }) {
-    const { auth } = usePage().props;
+    const { auth, online_users_count } = usePage().props;
     const user = auth?.user || {};
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [onlineModalOpen, setOnlineModalOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -55,10 +56,27 @@ export default function Navbar({ onOpenMobileMenu }) {
             </Button>
             <div className="hidden md:block" />
 
+            {/* Centered Clickable Online Users Badge for Super Admins */}
+            {user.role === 'super_admin' && (
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <button
+                        type="button"
+                        onClick={() => setOnlineModalOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-full border bg-background/50 px-3 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-accent focus:outline-none"
+                    >
+                        <span className="relative flex size-2">
+                            <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex size-2 rounded-full bg-green-500" />
+                        </span>
+                        <span className="text-muted-foreground uppercase tracking-wider text-[11px]">online :</span>
+                        <span className="font-semibold text-foreground">{online_users_count ?? 0}</span>
+                    </button>
+                </div>
+            )}
+
             <div className="flex items-center gap-3">
                 <ThemeToggle />
 
-                {/* Custom Native Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                     <button
                         type="button"
@@ -97,6 +115,12 @@ export default function Navbar({ onOpenMobileMenu }) {
                     )}
                 </div>
             </div>
+
+            <OnlineUsersModal
+                open={onlineModalOpen}
+                onClose={() => setOnlineModalOpen(false)}
+                endpoint="/dashboard/online-list"
+            />
         </header>
     );
 }
